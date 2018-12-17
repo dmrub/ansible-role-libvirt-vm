@@ -1,7 +1,7 @@
 <domain type='{{ libvirt_vm_engine }}'>
   <name>{{ vm.name }}</name>
   <memory>{{ vm.memory_mb | int * 1024 }}</memory>
-  <vcpu>{{ vm.vcpus }}</vcpu>
+  <vcpu placement='static'>{{ vm.vcpus }}</vcpu>
   <clock sync="localtime"/>
   <on_poweroff>destroy</on_poweroff>
   <on_reboot>restart</on_reboot>
@@ -13,6 +13,11 @@
     <boot dev='network'/>
     <bios useserial='yes'/>
   </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
   {% if cpu_mode %}
   <cpu mode='{{ cpu_mode }}'>
     <model fallback='allow'/>
@@ -49,11 +54,16 @@
     </console>
 {% else %}
     <serial type='pty'>
-      <target port='0'/>
+      <target type='isa-serial' port='0'>
+        <model name='isa-serial'/>
+      </target>
     </serial>
     <console type='pty'>
       <target type='serial' port='0'/>
     </console>
 {% endif %}
+    <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'>
+      <listen type='address' address='127.0.0.1'/>
+    </graphics>
   </devices>
 </domain>

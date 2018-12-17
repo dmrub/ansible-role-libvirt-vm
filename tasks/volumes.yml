@@ -13,6 +13,21 @@
   with_items: "{{ volumes | selectattr('image', 'defined') | map(attribute='image') | list }}"
   when: "'http' not in item"
 
+- name: Clone volumes
+  script: >
+    clone_virt_volume.sh
+    {{ item.clone }}
+    {{ item.name }}
+    {{ item.pool }}
+  with_items: "{{ volumes }}"
+  when: "item.clone is defined"
+  environment: "{{ libvirt_vm_script_env }}"
+  register: volume_result
+  changed_when:
+    - volume_result is success
+    - (volume_result.stdout | from_json).changed | default(True)
+  become: true # Because of chmod
+
 - name: Ensure the VM volumes exist
   script: >
     virt_volume.sh
