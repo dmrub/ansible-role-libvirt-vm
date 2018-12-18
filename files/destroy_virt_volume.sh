@@ -26,7 +26,7 @@ NAME=$1
 POOL=$2
 
 # Check whether a volume with this name exists.
-output=$(virsh vol-info --pool $POOL --vol $NAME 2>&1)
+output=$(virsh vol-info --pool "$POOL" --vol "$NAME" 2>&1)
 result=$?
 if [[ $result -ne 0 ]]; then
     if echo "$output" | grep 'Storage volume not found' >/dev/null 2>&1; then
@@ -40,7 +40,7 @@ if [[ $result -ne 0 ]]; then
 fi
 
 # Delete the volume.
-output=$(virsh vol-delete --pool $POOL --vol $NAME 2>&1)
+output=$(virsh vol-delete --pool "$POOL" --vol "$NAME" 2>&1)
 result=$?
 if [[ $result -ne 0 ]]; then
     echo "Failed to delete volume"
