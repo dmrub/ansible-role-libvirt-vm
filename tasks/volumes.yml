@@ -16,9 +16,10 @@
 - name: Clone volumes
   script: >
     clone_virt_volume.sh
-    {{ item.clone }}
-    {{ item.name }}
-    {{ item.pool }}
+    {{ item.clone | quote }}
+    {{ item.name | quote }}
+    {{ item.pool | quote }}
+    {{ item.capacity | default('') | quote }}
   with_items: "{{ volumes }}"
   when: "item.clone is defined"
   environment: "{{ libvirt_vm_script_env }}"
