@@ -31,14 +31,16 @@
 - name: Ensure the VM volumes exist
   script: >
     virt_volume.sh
-    -n {{ item.name }}
-    -p {{ item.pool }}
-    -c {{ item.capacity }}
-    -f {{ item.format | default(libvirt_volume_default_format) }}
+    -n {{ item.name | quote }}
+    -p {{ item.pool | quote }}
+    {% if item.capacity is defined %}
+    -c {{ item.capacity | quote }}
+    {% endif %}
+    -f {{ item.format | default(libvirt_volume_default_format) | quote }}
     {% if item.image is defined %}
-    -i {{ libvirt_vm_image_cache_path }}/{{ item.image | basename }}
+    -i {{ libvirt_vm_image_cache_path | quote }}/{{ item.image | basename | quote }}
     {% elif item.backing_image is defined %}
-    -b {{ item.backing_image }}
+    -b {{ item.backing_image | quote }}
     {% endif %}
   with_items: "{{ volumes }}"
   environment: "{{ libvirt_vm_script_env }}"
