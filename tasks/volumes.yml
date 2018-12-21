@@ -18,7 +18,7 @@
     clone_virt_volume.sh
     {{ item.clone | quote }}
     {{ item.name | quote }}
-    {{ item.pool | quote }}
+    {{ item.pool | default('default') | quote }}
     {{ item.capacity | default('') | quote }}
   with_items: "{{ volumes }}"
   when: "item.clone is defined"
@@ -33,7 +33,7 @@
   script: >
     virt_volume.sh
     -n {{ item.name | quote }}
-    -p {{ item.pool | quote }}
+    -p {{ item.pool | default('default') | quote }}
     {% if item.capacity is defined %}
     -c {{ item.capacity | quote }}
     {% endif %}
