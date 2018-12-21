@@ -40,9 +40,10 @@ while getopts ":n:p:c:f:i:b:" opt; do
 done
 
 # Check options
-if ! [[ -n $NAME && -n $POOL && -n $CAPACITY ]]; then
+if ! [[ -n $NAME && -n $POOL ]]; then
     echo "Missing manditory options"  >&2
-    echo "Usage: $0 -n <name> -p <pool> -c <capacity> [-f <format>] [-i <source image> | -b <backing image>]"
+    echo "Usage: $0 -n <name> -p <pool> [-c <capacity>] [-f <format>] [-i <source image> | -b <backing image>]"
+    echo "       If capacity is 0 or not specified image is not resized"
     exit 1
 fi
 if [[ -n $IMAGE && -n $BACKING_IMAGE ]]; then
@@ -125,18 +126,20 @@ if [[ -n $IMAGE ]]; then
         exit $result
     fi
 
-    # Resize the volume to the requested capacity. Attempting to resize a raw volume
-    # to the same capacity will result in failure, see:
-    # https://github.com/stackhpc/ansible-role-libvirt-vm/issues/23
-    if [ "${FORMAT,,}" != "raw" ]; then
-      output=$(virsh vol-resize --pool "$POOL" --vol "$NAME" --capacity "$CAPACITY" 2>&1)
-      result=$?
-      if [[ $result -ne 0 ]]; then
-          echo "Failed to resize volume $VOLUME to $CAPACITY"
-          echo "$output"
-          virsh vol-delete --pool "$POOL" --vol "$NAME"
-          exit $result
-      fi
+    if [[ -n "$CAPACITY" && "$CAPACITY" != "0" ]]; then
+        # Resize the volume to the requested capacity. Attempting to resize a raw volume
+        # to the same capacity will result in failure, see:
+        # https://github.com/stackhpc/ansible-role-libvirt-vm/issues/23
+        if [[ "${FORMAT,,}" != "raw" ]]; then
+            output=$(virsh vol-resize --pool "$POOL" --vol "$NAME" --capacity "$CAPACITY" 2>&1)
+            result=$?
+            if [[ $result -ne 0 ]]; then
+                echo "Failed to resize volume $NAME to $CAPACITY"
+                echo "$output"
+                virsh vol-delete --pool "$POOL" --vol "$NAME"
+                exit $result
+            fi
+        fi
     fi
 fi
 
