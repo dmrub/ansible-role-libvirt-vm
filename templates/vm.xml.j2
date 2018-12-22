@@ -38,6 +38,9 @@
     <interface type='network'>
       <source network='{{ interface.network }}'/>
 {% endif %}
+{% if interface.mac is defined %}
+      <mac address='{{ interface.mac }}'/>
+{% endif %}
       <model type='virtio'/>
     </interface>
 {% endfor %}
