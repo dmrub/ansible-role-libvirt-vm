@@ -34,6 +34,9 @@
 {% if interface.type is defined and interface.type == 'direct' %}
     <interface type='direct'>
       <source dev='{{ interface.source.dev }}' mode='{{ interface.source.mode | default('vepa') }}'/>
+{% elif (interface.type is defined and interface.type == 'bridge') or (interface.bridge is defined) %}
+    <interface type='bridge'>
+      <source bridge='{{ interface.bridge if interface.bridge is defined else interface.source.bridge }}'/>
 {% else %}
     <interface type='network'>
       <source network='{{ interface.network }}'/>
