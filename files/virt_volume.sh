@@ -73,6 +73,22 @@ if [[ -n $BACKING_IMAGE ]]; then
         echo "qcow2 format assumed for backing images, but $FORMAT format was supplied."
         exit 1
     fi
+
+    if [[ -z "$CAPACITY" || "$CAPACITY" = "0" ]]; then
+        output=$(virsh vol-info --pool "$POOL" --bytes "$BACKING_IMAGE")
+        result=$?
+        if [[ $result -ne 0 ]]; then
+            echo "Failed to get volume info of backing volume $BACKING_IMAGE" >&2
+            echo "$output"
+            exit $result
+        fi
+
+        CAPACITY=$(sed -nE 's/Capacity:[[:space:]]*([0-9]+)[[:space:]]*bytes/\1/p' <<<"$output")
+        if ! [[ "$CAPACITY" =~ ^[0-9]+$ ]] ; then
+            echo "Failed to get capacity from volume info of backing volume $BACKING_IMAGE" >&2
+            exit 1
+        fi
+    fi
     output=$(virsh vol-create-as --pool "$POOL" --name "$NAME" --capacity "$CAPACITY" --format "$FORMAT" --backing-vol "$BACKING_IMAGE" --backing-vol-format "$FORMAT" 2>&1)
     result=$?
 else
