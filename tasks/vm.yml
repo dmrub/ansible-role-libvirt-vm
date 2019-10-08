@@ -38,7 +38,7 @@
     vm_volume_paths: >-
       {{
         vm_volume_paths | combine({
-          item.volume.pool: {item.volume.name: item.stdout}},
+          (item.volume.pool | default('default')): {item.volume.name: item.stdout}},
           recursive=True
         )
       }}
