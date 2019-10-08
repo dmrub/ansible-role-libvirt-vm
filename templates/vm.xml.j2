@@ -26,11 +26,19 @@
   <devices>
     <emulator>{{ libvirt_vm_emulator }}</emulator>
 {% for volume in volumes %}
+{% if (volume.type | default('volume')) == 'file' %}
+    <disk type='file' device='{{ volume.device | default(libvirt_volume_default_device) }}'>
+      <driver name='qemu' type='{{ volume.format | default(libvirt_volume_default_format) }}'/>
+      <source file='{{ volume.path | default(vm_volume_paths[volume.pool][volume.name]) }}'/>
+      <target dev='vd{{ 'abcdefghijklmnopqrstuvwxyz'[loop.index - 1] }}'/>
+    </disk>
+{% else %}
     <disk type='volume' device='{{ volume.device | default(libvirt_volume_default_device) }}'>
       <driver name='qemu' type='{{ volume.format | default(libvirt_volume_default_format) }}'/>
       <source pool='{{ volume.pool }}' volume='{{ volume.name }}'/>
       <target dev='vd{{ 'abcdefghijklmnopqrstuvwxyz'[loop.index - 1] }}'/>
     </disk>
+{% endif %}
 {% endfor %}
 {% for interface in interfaces %}
 {% if interface.type is defined and interface.type == 'direct' %}

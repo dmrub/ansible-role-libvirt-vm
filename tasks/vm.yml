@@ -16,6 +16,35 @@
     interface: "{{ item }}"
   with_items: "{{ interfaces }}"
 
+- name: Init VM volume paths
+  set_fact:
+    vm_volume_paths: {}
+
+- name: Get volume paths of all VM volumes
+  command: >
+    virsh vol-path
+    --pool {{ volume.pool | default('default') | quote }}
+    --vol {{ volume.name | quote }}
+  loop: "{{ volumes }}"
+  loop_control:
+    loop_var: volume
+  environment: "{{ libvirt_vm_script_env }}"
+  register: volume_paths_result
+  changed_when:
+    - volume_paths_result is success
+
+- name: Set VM volume paths
+  set_fact:
+    vm_volume_paths: >-
+      {{
+        vm_volume_paths | combine({
+          item.volume.pool: {item.volume.name: item.stdout}},
+          recursive=True
+        )
+      }}
+  loop: "{{ volume_paths_result.results }}"
+  when: item.rc == 0
+
 - name: Ensure the VM is defined
   virt:
     name: "{{ vm.name }}"
