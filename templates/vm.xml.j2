@@ -76,8 +76,23 @@
       <target type='serial' port='0'/>
     </console>
 {% endif %}
+{% if graphics.type == 'vnc' %}
     <graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' keymap='en-us'>
       <listen type='address' address='127.0.0.1'/>
     </graphics>
+{% elif graphics.type == 'spice' %}
+    <graphics type='spice' port='-1' autoport='yes' listen='127.0.0.1'>
+      <listen type='address' address='127.0.0.1'/>
+    </graphics>
+    <video>
+      <model type='qxl' ram='65536' vram='65536' vgamem='16384' heads='1' primary='yes'/>
+      <alias name='video0'/>
+    </video>
+    {% if graphics.sound_enabled | default(false) %}
+    <sound model='ich6'>
+      <alias name='sound0'/>
+    </sound>
+    {% endif %}
+{% endif %}
   </devices>
 </domain>
