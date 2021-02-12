@@ -14,7 +14,7 @@
   when: "'http' not in item"
 
 - name: Clone volumes
-  script: >
+  script: >-
     clone_virt_volume.sh
     {{ item.clone | quote }}
     {{ item.name | quote }}
@@ -26,11 +26,11 @@
   register: volume_result
   changed_when:
     - volume_result is success
-    - (volume_result.stdout | from_json).changed | default(True)
+    - (volume_result.stdout | regex_search("^{.*}\s*$", multiline=True) | from_json).changed | default(True)
   become: true # Because of chmod
 
 - name: Ensure the VM volumes exist
-  script: >
+  script: >-
     virt_volume.sh
     -n {{ item.name | quote }}
     -p {{ item.pool | default('default') | quote }}
@@ -48,5 +48,5 @@
   register: volume_result
   changed_when:
     - volume_result is success
-    - (volume_result.stdout | from_json).changed | default(True)
+    - (volume_result.stdout | regex_search("^{.*}\s*$", multiline=True) | from_json).changed | default(True)
   become: true
