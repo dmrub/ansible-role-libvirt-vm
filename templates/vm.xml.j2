@@ -29,7 +29,7 @@
 {% if (volume.type | default('volume')) == 'file' %}
     <disk type='file' device='{{ volume.device | default(libvirt_volume_default_device) }}'>
       <driver name='qemu' type='{{ volume.format | default(libvirt_volume_default_format) }}'/>
-      <source file='{{ volume.path | default(vm_volume_paths[volume.pool|default('default')][volume.name]) }}'/>
+      <source file='{{ volume.file_path | default(vm_volume_paths[volume.pool|default('default')][volume.name]) }}'/>
       <target dev='vd{{ 'abcdefghijklmnopqrstuvwxyz'[loop.index - 1] }}'/>
     </disk>
 {% elif (volume.type | default('volume')) == 'block' %}
