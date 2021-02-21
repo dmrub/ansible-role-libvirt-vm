@@ -5,6 +5,7 @@
     {{ item.name }}
     {{ item.pool | default('default') }}
   with_items: "{{ volumes }}"
+  when: not (item.prevent_destroy | default(false, true) | bool) # destory only if prevent_destroy flag is not set
   register: volume_result
   environment: "{{ libvirt_vm_script_env }}"
   changed_when:
